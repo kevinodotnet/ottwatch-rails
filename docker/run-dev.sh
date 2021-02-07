@@ -1,6 +1,9 @@
 #!/bin/bash
 
 cd `dirname $0`
+cd ..
 
-docker run -i -t ottwatch-dev
+docker run \
+  -v `pwd`:/app \
+  -i -t ottwatch-dev
 
