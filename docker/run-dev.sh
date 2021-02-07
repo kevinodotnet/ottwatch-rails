@@ -5,5 +5,7 @@ cd ..
 
 docker run \
   -v `pwd`:/app \
-  -i -t ottwatch-dev
+  -i -t \
+  --name ottwatch-dev \
+  ottwatch-dev
 

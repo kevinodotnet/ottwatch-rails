@@ -5,8 +5,12 @@
 
 FROM ubuntu:20.04
 
-RUN apt-get update && \
- apt-get -y install rails ruby-dev
+RUN apt-get update
+RUN apt-get -y install rails ruby-dev
+RUN apt-get -y install build-essential npm
+
+# 'rails new <project>' fails in container due to https://github.com/erikhuda/thor/issues/721#issuecomment-650673019
+RUN dpkg -r --force-depends ruby-thor
+RUN gem install thor
 
 RUN gem install rails
-
