@@ -6,8 +6,8 @@
 FROM ubuntu:20.04
 
 RUN apt-get update
-RUN apt-get -y install rails ruby-dev
-RUN apt-get -y install build-essential npm curl
+RUN apt-get -y install rails ruby-dev mysql-server mysql-client vim curl
+RUN apt-get -y install build-essential npm
 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
