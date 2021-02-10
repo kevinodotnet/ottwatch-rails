@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd `dirname $0`
+cd ../app
+
+/etc/init.d/mysql start
+
+bin/rails db:create
+bin/rails db:migrate
+bin/rails db:migrate RAILS_ENV=test
