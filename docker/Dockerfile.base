@@ -5,22 +5,16 @@
 
 FROM ubuntu:20.04
 
-RUN apt-get update
-RUN apt-get -y install rails ruby-dev vim curl
-RUN apt-get -y install mysql-server mysql-client libmysqlclient-dev
-RUN apt-get -y install build-essential npm
-
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt-get update
-RUN apt-get -y install yarn
-
-# 'rails new <project>' fails in container due to https://github.com/erikhuda/thor/issues/721#issuecomment-650673019
-RUN dpkg -r --force-depends ruby-thor
-RUN gem install thor
-
-RUN gem install rails
-
-# RUN gem install mysql2
-
-RUN (cd /tmp; rails new app)
+RUN apt-get update && \
+  apt-get -y install rails ruby-dev vim curl && \
+  apt-get -y install mysql-server mysql-client libmysqlclient-dev && \
+  apt-get -y install build-essential npm && \
+  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+  echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+  apt-get update && \
+  apt-get -y install yarn && \
+  dpkg -r --force-depends ruby-thor && \
+  gem install thor && \
+  gem install rails && \
+  gem install mysql2 && \
+  (cd /tmp; rails new app)
