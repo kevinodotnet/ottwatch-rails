@@ -1,0 +1,14 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# This model initially had no columns defined. If you add columns to the
+# model remove the '{}' from the fixture names and add the columns immediately
+# below each fixture, per the syntax in the comments below
+#
+duplex:
+  app_id: _duplex
+  dev_id: D1
+  app_type: Zoning
+  description: Owner wants R2 so they can build a duplex but Ottawa is stupid and still has R1 zoning
+  received_on: 2020-01-01
+  created_at: <%= Time.zone.now %>
+  updated_at: <%= Time.zone.now %>
