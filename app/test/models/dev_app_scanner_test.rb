@@ -5,9 +5,24 @@ class DevAppScannerTest < ActiveSupport::TestCase
     @scanner = DevAppScanner.new
   end
 
-  test '#devapp_xls_data returns binary XLS payload' do
-    xls_data = @scanner.devapp_xls_data
-    assert xls_data.is_a?(String)
-    assert xls_data.length > 10_000 # this big, it's probably good Excel data.
+  test 'integration test' do
+    xls_path = "/tmp/csv_file_#{rand(100_000_000_000)}.xls"
+    csv_path = "/tmp/csv_file_#{rand(100_000_000_000)}.csv"
+    begin
+      File.write(xls_path, @scanner.devapp_xls_data.force_encoding(Encoding::UTF_8))
+      @scanner.convert_xls_to_csv(xls_path, csv_path)
+      result = @scanner.devapp_csv_data(csv_path)
+      assert result.is_a?(CSV::Table)
+
+      expected_headers = [
+        "Application Number","Application Date","Application Type","Address Number","Road Name",
+        "Road Type","Object Status Type","Application Status","File Lead","Brief Description",
+        "Object Status Date","Ward #","Ward"
+      ]
+      assert_equal expected_headers.sort, result.first.headers.sort
+    ensure
+      File.delete(xls_path)
+      File.delete(csv_path)
+    end
   end
 end
