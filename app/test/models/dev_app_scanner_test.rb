@@ -1,6 +1,7 @@
 require "test_helper"
 
 require 'rubygems'
+
 require 'vcr'
 
 VCR.configure do |config|
@@ -13,7 +14,7 @@ class DevAppScannerTest < ActiveSupport::TestCase
     @scanner = DevAppScanner.new
   end
 
-  test 'integration test' do
+  test 'XLS download and parsing integration test' do
     VCR.use_cassette("dev_app_scanner_integration_test") do
       xls_path = "/tmp/csv_file_#{rand(100_000_000_000)}.xls"
       csv_path = "/tmp/csv_file_#{rand(100_000_000_000)}.csv"
@@ -33,6 +34,36 @@ class DevAppScannerTest < ActiveSupport::TestCase
         File.delete(xls_path)
         File.delete(csv_path)
       end
+    end
+  end
+
+  test '#dev_app_details obtains details on the provided devapp' do
+    VCR.use_cassette("dev_app_scanner_dev_app_details") do
+      expected_keys = [
+        "devAppId",
+       "applicationNumber",
+       "applicationDate",
+       "applicationDateYMD",
+       "applicationTypeId",
+       "applicationType",
+       "applicationBriefDesc",
+       "applicationStatus",
+       "devAppAddresses",
+       "devAppDocuments",
+       "objectStatus",
+       "devAppWard",
+       "endOfCirculationDate",
+       "endOfCirculationDateYMD",
+       "canComment",
+       "showFeedbackLink",
+       "plannerFirstName",
+       "plannerLastName",
+       "plannerPhone",
+       "plannerEmail",
+       "searchableText"
+      ].sort
+      details = @scanner.dev_app_details('D07-12-16-0093')
+      assert_equal expected_keys, details.keys.sort
     end
   end
 end

@@ -14,34 +14,25 @@ class DevAppScanner
     CSV.parse(File.read(csv_file), headers: true)
   end
 
-  # def authkey
-  #   '4r5T2egSmKm5'
-  # end
+  def dev_app_details(devid)
+    # query to map from public 'devid' to private '_appid' style.
+    url = "https://devapps-restapi.ottawa.ca/devapps/search?authKey=#{authkey}&appStatus=all&searchText=#{devid}&appType=all&ward=all&bounds=0,0,0,0"
+    json = Net::HTTP.get(URI(url))
+    data = JSON.parse(json)
 
-  # def process_devapp(devid)
-  #   url = "https://devapps-restapi.ottawa.ca/devapps/search?authKey=#{authkey}&appStatus=all&searchText=#{devid}&appType=all&ward=all&bounds=0,0,0,0"
-  #   json = Net::HTTP.get(URI(url))
-  #   data = JSON.parse(json)
+    appid = data['devApps'].first['devAppId']
 
-  #   appid = data['devApps'].first['devAppId']
+    # obtain full details on the application
+    url = "https://devapps-restapi.ottawa.ca/devapps/#{appid}?authKey=#{authkey}"
+    json = Net::HTTP.get(URI(url))
+    JSON.parse(json)
+  end
 
-  #   url = "https://devapps-restapi.ottawa.ca/devapps/#{appid}?authKey=#{authkey}"
-  #   json = Net::HTTP.get(URI(url))
-  #   data2 = JSON.parse(json)
+  private
 
-  #   devapp = DevApp.find_by(devid: devid)
-
-  #   devapp.address = data2['devAppAddresses'].map{|a| {lat: a['addressLatitude'], lon: a['addressLongitude'], addr: a['addressNumberRoadName']}}.to_json
-  #   devapp.apptype = data2.dig('applicationType', 'en')
-  #   devapp.receiveddate = data2['applicationDateYMD']
-
-  #   ward = data2['devAppWard']
-  #   devapp.ward = "#{ward.dig('wardNumber', 'en')} - #{ward.dig('wardName', 'en')} - #{ward['councillorFirstName']} #{ward['councillorLastName']}"
-
-  #   binding.pry
-
-  #   1
-  # end
+  def authkey
+    '4r5T2egSmKm5'
+  end
 
   # def scan
   #   #process_devapp('D07-12-16-0093')
