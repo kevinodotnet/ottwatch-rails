@@ -1,21 +1,21 @@
-class DevAppScanner
+require 'csv'
 
+class DevAppScanner
   def devapp_xls_data
     uri = URI('https://devapps-restapi.ottawa.ca/devapps/ExportData')
     Net::HTTP.get(uri)
   end
 
+  def convert_xls_to_csv(xls_file, csv_file)
+    `ssconvert #{xls_file} #{csv_file} 2>/dev/null`
+  end
+
+  def devapp_csv_data(csv_file)
+    CSV.parse(File.read(csv_file), headers: true)
+  end
+
   # def authkey
   #   '4r5T2egSmKm5'
-  # end
-
-  # def devapp_csv_data
-  #   uri = URI('https://devapps-restapi.ottawa.ca/devapps/ExportData')
-  #   csv_file = '/tmp/devapp.csv'
-  #   xls_file = '/tmp/devapp.xlsx'
-  #   # File.write('/tmp/devapp.xlsx', Net::HTTP.get(uri))
-  #   `ssconvert #{xls_file} #{csv_file} 2>/dev/null`
-  #   CSV.parse(File.read(csv_file), headers: true)
   # end
 
   # def process_devapp(devid)
