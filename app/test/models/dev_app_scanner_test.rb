@@ -10,6 +10,33 @@ VCR.configure do |config|
 end
 
 class DevAppScannerTest < ActiveSupport::TestCase
+  VCR_DEV_APP_DETAILS = 'dev_app_scanner_dev_app_details'
+  DEV_APP_ID = 'D07-12-16-0093'
+  DEV_APP_DETAILS_EXPECTED_KEYS = [
+    "devAppId",
+    "applicationNumber",
+    "applicationDate",
+    "applicationDateYMD",
+    "applicationTypeId",
+    "applicationType",
+    "applicationBriefDesc",
+    "applicationStatus",
+    "devAppAddresses",
+    "devAppDocuments",
+    "objectStatus",
+    "devAppWard",
+    "endOfCirculationDate",
+    "endOfCirculationDateYMD",
+    "canComment",
+    "showFeedbackLink",
+    "plannerFirstName",
+    "plannerLastName",
+    "plannerPhone",
+    "plannerEmail",
+    "searchableText"
+  ].sort
+
+
   setup do
     @scanner = DevAppScanner.new
   end
@@ -38,32 +65,28 @@ class DevAppScannerTest < ActiveSupport::TestCase
   end
 
   test '#dev_app_details obtains details on the provided devapp' do
-    VCR.use_cassette("dev_app_scanner_dev_app_details") do
-      expected_keys = [
-        "devAppId",
-       "applicationNumber",
-       "applicationDate",
-       "applicationDateYMD",
-       "applicationTypeId",
-       "applicationType",
-       "applicationBriefDesc",
-       "applicationStatus",
-       "devAppAddresses",
-       "devAppDocuments",
-       "objectStatus",
-       "devAppWard",
-       "endOfCirculationDate",
-       "endOfCirculationDateYMD",
-       "canComment",
-       "showFeedbackLink",
-       "plannerFirstName",
-       "plannerLastName",
-       "plannerPhone",
-       "plannerEmail",
-       "searchableText"
-      ].sort
-      details = @scanner.dev_app_details('D07-12-16-0093')
-      assert_equal expected_keys, details.keys.sort
+    VCR.use_cassette(VCR_DEV_APP_DETAILS) do
+      details = @scanner.dev_app_details(DEV_APP_ID)
+      assert_equal DEV_APP_DETAILS_EXPECTED_KEYS, JSON.parse(details).keys.sort
     end
   end
+
+  test '#injext_dev_app creates DevApp record when new devapp is injested' do 
+    VCR.use_cassette(VCR_DEV_APP_DETAILS) do
+      assert_changes -> { DevApp.count } do 
+        @scanner.injest_dev_app(DEV_APP_ID)
+      end
+
+      dev_app = DevApp.find_by(dev_id: DEV_APP_ID)
+      assert dev_app
+
+      assert_equal "__003SPU", dev_app[:app_id]
+      assert_equal "D07-12-16-0093", dev_app[:dev_id]
+      assert_equal "Site Plan Control", dev_app[:app_type]
+      assert_equal "New 16 unit building for affordable rental housing", dev_app[:description]
+      assert_equal "2016-06-28".to_date, dev_app[:received_on]
+      assert_equal DEV_APP_DETAILS_EXPECTED_KEYS, dev_app.details.keys.sort
+    end
+  end
+
 end
