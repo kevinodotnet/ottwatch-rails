@@ -6,7 +6,7 @@
 FROM ubuntu:20.04
 
 RUN apt-get update && \
-  apt-get -y install rails ruby-dev vim curl gnumeric && \
+  apt-get -y install rails ruby-dev vim curl gnumeric less && \
   apt-get -y install mysql-server mysql-client libmysqlclient-dev && \
   apt-get -y install build-essential npm && \
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
