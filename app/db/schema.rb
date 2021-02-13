@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_02_10_021730) do
+ActiveRecord::Schema.define(version: 2021_02_13_144531) do
 
   create_table "dev_apps", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "app_id", limit: 32
@@ -20,6 +20,7 @@ ActiveRecord::Schema.define(version: 2021_02_10_021730) do
     t.date "received_on"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.text "details"
   end
 
 end
