@@ -71,10 +71,12 @@ class DevAppScannerTest < ActiveSupport::TestCase
     end
   end
 
-  test '#injext_dev_app creates DevApp record when new devapp is injested' do 
+  test '#injest_dev_app creates DevApp & DevAppStatus records when new devapp is injested' do
     VCR.use_cassette(VCR_DEV_APP_DETAILS) do
-      assert_changes -> { DevApp.count } do 
-        @scanner.injest_dev_app(DEV_APP_ID)
+      assert_changes -> { DevAppDetail.count } do
+        assert_changes -> { DevApp.count } do
+          @scanner.injest_dev_app(DEV_APP_ID)
+        end
       end
 
       dev_app = DevApp.find_by(dev_id: DEV_APP_ID)
@@ -85,7 +87,7 @@ class DevAppScannerTest < ActiveSupport::TestCase
       assert_equal "Site Plan Control", dev_app[:app_type]
       assert_equal "New 16 unit building for affordable rental housing", dev_app[:description]
       assert_equal "2016-06-28".to_date, dev_app[:received_on]
-      assert_equal DEV_APP_DETAILS_EXPECTED_KEYS, dev_app.details.keys.sort
+      assert_equal DEV_APP_DETAILS_EXPECTED_KEYS, dev_app.latest_details.keys.sort
     end
   end
 
