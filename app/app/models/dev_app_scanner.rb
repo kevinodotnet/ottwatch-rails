@@ -36,19 +36,15 @@ class DevAppScanner
     dev_app.app_type = details['applicationType']['en']
     dev_app.description = details['applicationBriefDesc']['en']
     dev_app.received_on = details['applicationDateYMD']
-    dev_app.details = details
-
-    # TODO: state tracking of the status history; keep more than just today's snapshot/status.
-    #    "objectStatus"=>
-    # {"objectStatusTypeId"=>"__4BXROX",
-    #  "objectCurrentStatus"=>{"en"=>"Agreement Registered - Final Legal Clearance Given", "fr"=>"Entente Enregistr<C3><A9>e - Approbation Finale du Contentieux"},
-    #  "objectCurrentStatusDate"=>636409757630000000,
-    #  "objectCurrentStatusDateYMD"=>"2017-09-14"},
-
-    return dev_app unless dev_app.changed?
-
-    # TODO: write to FEED that a change (or new record) has been seen
     dev_app.save!
+
+    if dev_details = dev_app.details.last
+      # TODO: handle updated details case
+    else
+      dev_details = dev_app.details.new
+      dev_details.details = details
+      dev_details.save!
+    end
   end
 
   private
