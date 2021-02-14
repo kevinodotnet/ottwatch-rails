@@ -10,7 +10,6 @@ VCR.configure do |config|
 end
 
 class DevAppScannerTest < ActiveSupport::TestCase
-  VCR_DEV_APP_DETAILS = 'dev_app_scanner_dev_app_details'
   DEV_APP_ID = 'D07-12-16-0093'
   DEV_APP_DETAILS_EXPECTED_KEYS = [
     "devAppId",
@@ -42,7 +41,7 @@ class DevAppScannerTest < ActiveSupport::TestCase
   end
 
   test 'XLS download and parsing integration test' do
-    VCR.use_cassette("dev_app_scanner_integration_test") do
+    VCR.use_cassette("#{class_name}_#{method_name}") do
       xls_path = "/tmp/csv_file_#{rand(100_000_000_000)}.xls"
       csv_path = "/tmp/csv_file_#{rand(100_000_000_000)}.csv"
       begin
@@ -65,19 +64,20 @@ class DevAppScannerTest < ActiveSupport::TestCase
   end
 
   test '#dev_app_details obtains details on the provided devapp' do
-    VCR.use_cassette(VCR_DEV_APP_DETAILS) do
+    VCR.use_cassette("#{class_name}_#{method_name}") do
       details = @scanner.dev_app_details(DEV_APP_ID)
       assert_equal DEV_APP_DETAILS_EXPECTED_KEYS, JSON.parse(details).keys.sort
     end
   end
 
   test '#injest_dev_app creates DevApp & DevAppStatus records when new devapp is injested' do
-    VCR.use_cassette(VCR_DEV_APP_DETAILS) do
+    VCR.use_cassette("#{class_name}_#{method_name}") do
       assert_changes -> { DevAppDetail.count } do
         assert_changes -> { DevApp.count } do
           @scanner.injest_dev_app(DEV_APP_ID)
         end
       end
+
 
       dev_app = DevApp.find_by(dev_id: DEV_APP_ID)
       assert dev_app
@@ -90,5 +90,23 @@ class DevAppScannerTest < ActiveSupport::TestCase
       assert_equal DEV_APP_DETAILS_EXPECTED_KEYS, dev_app.latest_details.keys.sort
     end
   end
+
+  test '#injest_dev_app detects and persists updated details' do
+    VCR.use_cassette("#{class_name}_#{method_name}") do
+      @scanner.injest_dev_app(DEV_APP_ID)
+
+      dev_app = DevApp.find_by(dev_id: DEV_APP_ID)
+      details = dev_app.details.last
+      details.details["applicationStatus"]['en'] = 'Foo'
+      details.save!
+
+      assert_changes -> { DevAppDetail.count } do
+        @scanner.injest_dev_app(DEV_APP_ID)
+      end
+
+      assert_equal 2, dev_app.reload.details.count
+    end
+  end
+
 
 end
