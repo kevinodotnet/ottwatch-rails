@@ -107,6 +107,7 @@ GEM
     minitest (5.14.3)
     minitest-focus (1.2.1)
       minitest (>= 4, < 6)
+    mocha (1.12.0)
     msgpack (1.4.2)
     mysql2 (0.5.3)
     nio4r (2.5.5)
@@ -230,6 +231,7 @@ DEPENDENCIES
   jbuilder (~> 2.7)
   listen (~> 3.3)
   minitest-focus
+  mocha
   mysql2 (~> 0.5)
   pry
   pry-byebug

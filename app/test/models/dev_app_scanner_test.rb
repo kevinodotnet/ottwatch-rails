@@ -1,7 +1,5 @@
 require "test_helper"
-
 require 'rubygems'
-
 require 'vcr'
 
 VCR.configure do |config|
@@ -108,5 +106,16 @@ class DevAppScannerTest < ActiveSupport::TestCase
     end
   end
 
-
+  test '#scan_all uses CSV payload then calls injest_dev_app for each row' do
+    d1 = rand(100_000_000).to_s
+    d2 = rand(100_000_000).to_s
+    fake_records = [
+      { 'Application Number' => d1 },
+      { 'Application Number' => d2 },
+    ]
+    DevAppScanner.any_instance.expects(:devapp_csv_data).returns(fake_records)
+    DevAppScanner.any_instance.expects(:injest_dev_app).with(d1).times(1)
+    DevAppScanner.any_instance.expects(:injest_dev_app).with(d2).times(1)
+    @scanner.scan_all
+  end
 end

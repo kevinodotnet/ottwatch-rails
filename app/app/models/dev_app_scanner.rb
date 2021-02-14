@@ -51,18 +51,15 @@ class DevAppScanner
     end
   end
 
+  def scan_all
+    devapp_csv_data.each do |row|
+      injest_dev_app(row['Application Number'])
+    end
+  end
+
   private
 
   def authkey
     '4r5T2egSmKm5'
   end
-
-  # def scan
-  #   #process_devapp('D07-12-16-0093')
-  #   process_devapp('D02-02-20-0110')
-  #   return
-  #   devapp_csv_data.each do |row|
-  #     process_devapp(row['Application Number'])
-  #   end
-  # end
 end
