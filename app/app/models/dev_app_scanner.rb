@@ -39,7 +39,11 @@ class DevAppScanner
     dev_app.save!
 
     if dev_details = dev_app.details.last
-      # TODO: handle updated details case
+      if details != dev_details.details
+        dev_details = dev_app.details.new
+        dev_details.details = details
+        dev_details.save!
+      end
     else
       dev_details = dev_app.details.new
       dev_details.details = details
