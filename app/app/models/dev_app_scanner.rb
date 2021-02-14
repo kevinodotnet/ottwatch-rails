@@ -27,7 +27,7 @@ class DevAppScanner
     json = Net::HTTP.get(URI(url))
   end
 
-  def injest_dev_app(devid)
+  def ingest_dev_app(devid)
     details = JSON.parse(dev_app_details(devid))
 
     dev_app = DevApp.find_by(dev_id: devid) || DevApp.new
@@ -53,7 +53,7 @@ class DevAppScanner
 
   def scan_all
     devapp_csv_data.each do |row|
-      injest_dev_app(row['Application Number'])
+      ingest_dev_app(row['Application Number'])
     end
   end
 
