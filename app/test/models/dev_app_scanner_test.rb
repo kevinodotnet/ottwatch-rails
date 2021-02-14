@@ -68,11 +68,11 @@ class DevAppScannerTest < ActiveSupport::TestCase
     end
   end
 
-  test '#injest_dev_app creates DevApp & DevAppStatus records when new devapp is injested' do
+  test '#ingest_dev_app creates DevApp & DevAppStatus records when new devapp is ingested' do
     VCR.use_cassette("#{class_name}_#{method_name}") do
       assert_changes -> { DevAppDetail.count } do
         assert_changes -> { DevApp.count } do
-          @scanner.injest_dev_app(DEV_APP_ID)
+          @scanner.ingest_dev_app(DEV_APP_ID)
         end
       end
 
@@ -89,9 +89,9 @@ class DevAppScannerTest < ActiveSupport::TestCase
     end
   end
 
-  test '#injest_dev_app detects and persists updated details' do
+  test '#ingest_dev_app detects and persists updated details' do
     VCR.use_cassette("#{class_name}_#{method_name}") do
-      @scanner.injest_dev_app(DEV_APP_ID)
+      @scanner.ingest_dev_app(DEV_APP_ID)
 
       dev_app = DevApp.find_by(dev_id: DEV_APP_ID)
       details = dev_app.details.last
@@ -99,14 +99,14 @@ class DevAppScannerTest < ActiveSupport::TestCase
       details.save!
 
       assert_changes -> { DevAppDetail.count } do
-        @scanner.injest_dev_app(DEV_APP_ID)
+        @scanner.ingest_dev_app(DEV_APP_ID)
       end
 
       assert_equal 2, dev_app.reload.details.count
     end
   end
 
-  test '#scan_all uses CSV payload then calls injest_dev_app for each row' do
+  test '#scan_all uses CSV payload then calls ingest_dev_app for each row' do
     d1 = rand(100_000_000).to_s
     d2 = rand(100_000_000).to_s
     fake_records = [
@@ -114,8 +114,8 @@ class DevAppScannerTest < ActiveSupport::TestCase
       { 'Application Number' => d2 },
     ]
     DevAppScanner.any_instance.expects(:devapp_csv_data).returns(fake_records)
-    DevAppScanner.any_instance.expects(:injest_dev_app).with(d1).times(1)
-    DevAppScanner.any_instance.expects(:injest_dev_app).with(d2).times(1)
+    DevAppScanner.any_instance.expects(:ingest_dev_app).with(d1).times(1)
+    DevAppScanner.any_instance.expects(:ingest_dev_app).with(d2).times(1)
     @scanner.scan_all
   end
 end
