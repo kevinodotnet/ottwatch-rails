@@ -77,6 +77,7 @@ class DevAppScanner
     csv_data = devapp_csv_data(csv_path)
     csv_data = csv_data.map{ |row| row['Application Number'] }
     csv_data = csv_data.shuffle
+    csv_data = csv_data.uniq
     csv_data.each_with_index do |app_id,i|
       begin
         Rails.logger.info("ingesting #{i}/#{csv_data.count} #{app_id}")
