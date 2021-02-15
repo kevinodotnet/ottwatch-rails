@@ -1,6 +1,10 @@
 require 'csv'
 
 class DevAppScanner
+  class DevAppScannerError < StandardError; end
+  class DevAppNotFound < DevAppScannerError; end
+  class UnexpectedDataCondition < DevAppScannerError; end
+
   def devapp_xls_data
     uri = URI('https://devapps-restapi.ottawa.ca/devapps/ExportData')
     Net::HTTP.get(uri)
@@ -20,6 +24,9 @@ class DevAppScanner
     json = Net::HTTP.get(URI(url))
     data = JSON.parse(json)
 
+    raise DevAppNotFound.new(devid) if data['totalDevApps'] == 0
+    raise UnexpectedDataCondition.new("Unexpected number of matches for #{devid}") if data['totalDevApps'] > 1
+
     appid = data['devApps'].first['devAppId']
 
     # obtain full details on the application
@@ -28,6 +35,7 @@ class DevAppScanner
   end
 
   def ingest_dev_app(devid)
+    Rails.logger.info("ingesting #{devid}")
     details = JSON.parse(dev_app_details(devid))
 
     dev_app = DevApp.find_by(dev_id: devid) || DevApp.new
@@ -36,24 +44,47 @@ class DevAppScanner
     dev_app.app_type = details['applicationType']['en']
     dev_app.description = details['applicationBriefDesc']['en']
     dev_app.received_on = details['applicationDateYMD']
-    dev_app.save!
 
-    if dev_details = dev_app.details.last
-      if details != dev_details.details
+    DevApp.transaction do
+      dev_app.save!
+
+      if dev_details = dev_app.details.last
+        if details != dev_details.details
+          dev_details = dev_app.details.new
+          dev_details.details = details
+          dev_details.save!
+        end
+      else
         dev_details = dev_app.details.new
         dev_details.details = details
         dev_details.save!
       end
-    else
-      dev_details = dev_app.details.new
-      dev_details.details = details
-      dev_details.save!
     end
   end
 
   def scan_all
-    devapp_csv_data.each do |row|
-      ingest_dev_app(row['Application Number'])
+    # get latest XLS data
+    Rails.logger.info('downloading xls')
+    xls_path = "/tmp/csv_file_#{rand(100_000_000_000)}.xls"
+    xls_data = devapp_xls_data
+    File.write(xls_path, xls_data.force_encoding(Encoding::UTF_8))
+
+    Rails.logger.info('converting to csv')
+    csv_path = "/tmp/csv_file_#{rand(100_000_000_000)}.csv"
+    convert_xls_to_csv(xls_path, csv_path)
+
+    Rails.logger.info('scanning')
+    csv_data = devapp_csv_data(csv_path)
+    csv_data = csv_data.map{ |row| row['Application Number'] }
+    csv_data = csv_data.shuffle
+    csv_data.each_with_index do |app_id,i|
+      begin
+        Rails.logger.info("ingesting #{i}/#{csv_data.count} #{app_id}")
+        ingest_dev_app(app_id)
+      rescue => e
+        Rails.logger.error("#{e.class}: #{app_id}: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
+      end
     end
   end
 

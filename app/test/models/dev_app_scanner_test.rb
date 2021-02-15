@@ -106,6 +106,24 @@ class DevAppScannerTest < ActiveSupport::TestCase
     end
   end
 
+  test '#dev_app_details raises DevAppNotFound if the devapp does not exist' do
+    VCR.use_cassette("#{class_name}_#{method_name}") do
+      assert_raises DevAppScanner::DevAppNotFound do
+        @scanner.dev_app_details("fake_kevino")
+      end
+    end
+  end
+
+  test '#dev_app_details raises UnexpectedDataCondition if a query for devapp details returns multiple records' do
+    fake_response = {
+      totalDevApps: 2
+    }
+    Net::HTTP.expects(:get).returns(fake_response.to_json)
+    assert_raises DevAppScanner::UnexpectedDataCondition do
+      @scanner.dev_app_details('fake_irrelavent_value')
+    end
+  end
+
   test '#scan_all uses CSV payload then calls ingest_dev_app for each row' do
     d1 = rand(100_000_000).to_s
     d2 = rand(100_000_000).to_s
@@ -113,6 +131,7 @@ class DevAppScannerTest < ActiveSupport::TestCase
       { 'Application Number' => d1 },
       { 'Application Number' => d2 },
     ]
+    DevAppScanner.any_instance.expects(:devapp_xls_data).returns('fake') # avoid HTTP call inside test
     DevAppScanner.any_instance.expects(:devapp_csv_data).returns(fake_records)
     DevAppScanner.any_instance.expects(:ingest_dev_app).with(d1).times(1)
     DevAppScanner.any_instance.expects(:ingest_dev_app).with(d2).times(1)
