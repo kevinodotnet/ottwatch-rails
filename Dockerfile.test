@@ -1,0 +1,18 @@
+# docker build -t ottwatch-dev .
+
+# docker run -t -i -p 80:80 ottwatch-dev
+# docker run -t -i ottwatch-dev
+
+FROM ottwatch-base
+
+RUN git clone https://github.com/kevinodotnet/ottwatch-rails.git /ottwatch
+
+WORKDIR /ottwatch/app
+
+RUN /etc/init.d/mysql start && \
+	bundle update && \
+	RAILS_ENV=test bin/rails db:create && \
+	RAILS_ENV=test bin/rails db:migrate && \
+	date | tee /tmp/test.log && \
+	bin/rails test test | tee /tmp/test.log
+
