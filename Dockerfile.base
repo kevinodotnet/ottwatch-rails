@@ -5,14 +5,26 @@
 
 FROM ubuntu:20.04
 
+WORKDIR /ottwatch
+
 RUN apt-get update && \
-  apt-get -y install rails ruby-dev vim curl gnumeric less && \
-  apt-get -y install mysql-server mysql-client libmysqlclient-dev && \
-  apt-get -y install build-essential npm && \
+  DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    rails \
+    ruby-dev \
+    vim \
+    curl \
+    gnumeric \
+    less \
+    git \
+    mysql-server \
+    mysql-client \
+    libmysqlclient-dev \
+    build-essential \
+    npm  && \
   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
   echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
   apt-get update && \
-  apt-get -y install yarn && \
+  DEBIAN_FRONTEND=noninteractive apt-get -y install yarn && \
   dpkg -r --force-depends ruby-thor && \
   gem install thor && \
   gem install rails && \
