@@ -1,5 +1,5 @@
 class DevAppsController < ApplicationController
   def index
-    @foo = Time.now.utc.to_s
+    @now = Time.now.utc.to_i
   end
 end
