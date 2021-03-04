@@ -1,8 +1,7 @@
 #!/bin/bash
 
 cd `dirname $0`
+cd ..
 
-docker build -t ottwatch-dev - < Dockerfile.dev
-
-docker container rm ottwatch-dev
+docker build -t ottwatch-dev -f Dockerfile.dev .
 
